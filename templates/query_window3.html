@@ -1,0 +1,162 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Query Page</title>
+</head>
+<body>
+    <h1>Welcome to the Query Page</h1>
+    <form id="queryForm">
+        <label for="query">Enter your query:</label>
+        <input type="text" id="query" name="query" required>
+        <button type="submit">Submit</button>
+    </form>
+    <pre id="response"></pre>
+    <script>
+        document.getElementById('queryForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const query = document.getElementById('query').value;
+            const responseElement = document.getElementById('response');
+            responseElement.textContent = "Processing...";
+            
+            try {
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+
+                const data = await response.json();
+                responseElement.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseElement.textContent = `Error: ${error}`;
+            }
+        });
+    </script>
+</body>
+</html> -->
+
+<!--
+==============================================================================================================
+-->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applicant Query Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #f0f8ff, #e6e6fa);
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4b0082;
+        }
+        form {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 60%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4b0082;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #6a5acd;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #4b0082;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Applicant Query Page</h1>
+    <form id="queryForm">
+        <input type="text" id="query" placeholder="Enter your query here..." required>
+        <button type="submit">Search</button>
+    </form>
+    <div id="response">
+        <p id="message"></p>
+        <table id="outputTable" style="display: none;">
+            <thead id="tableHeader"></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <script>
+        document.getElementById('queryForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const query = document.getElementById('query').value;
+            const messageElement = document.getElementById('message');
+            const tableElement = document.getElementById('outputTable');
+            const tableHeader = document.getElementById('tableHeader');
+            const tableBody = document.getElementById('tableBody');
+    
+            messageElement.textContent = "Processing...";
+            tableElement.style.display = "none";
+    
+            try {
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+    
+                const data = await response.json();
+    
+                if (data.error) {
+                    messageElement.textContent = `Error: ${data.error}`;
+                } else {
+                    if (data.message) {
+                        messageElement.textContent = data.message;
+                    } else {
+                        messageElement.textContent = "Query executed successfully.";
+                    }
+    
+                    if (data.applicants && data.applicants.length > 0) {
+                        const headers = Object.keys(data.applicants[0]);
+                        tableHeader.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+                        tableBody.innerHTML = data.applicants.map(a => `<tr>${headers.map(h => `<td>${a[h]}</td>`).join('')}</tr>`).join('');
+                        tableElement.style.display = "table";
+                    } else {
+                        messageElement.textContent += " No data found.";
+                    }
+                }
+            } catch (error) {
+                messageElement.textContent = `Error: ${error}`;
+            }
+        });
+    </script>
+    
+</body>
+</html>
