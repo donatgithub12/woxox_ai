@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applicant Query Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #f0f8ff, #e6e6fa);
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4b0082;
+        }
+        form {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 60%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4b0082;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #6a5acd;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #4b0082;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Applicant Query Page</h1>
+    <form id="queryForm">
+        <input type="text" id="query" placeholder="Enter your query here..." required>
+        <button type="submit">Search</button>
+    </form>
+    <div id="response">
+        <p id="message"></p>
+        <table id="outputTable" style="display: none;">
+            <thead id="tableHeader"></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <script>
+    document.getElementById('queryForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const query = document.getElementById('query').value;
+    const messageElement = document.getElementById('message');
+    const tableElement = document.getElementById('outputTable');
+    const tableHeader = document.getElementById('tableHeader');
+    const tableBody = document.getElementById('tableBody');
+
+    messageElement.textContent = "Processing...";
+    tableElement.style.display = "none";
+
+    try {
+        // Send the query to the backend
+        const response = await fetch('/query', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            // Display the error message
+            messageElement.textContent = `Error: ${data.error}`;
+        } else {
+            if (data.message) {
+                messageElement.textContent = data.message;
+            } else {
+                messageElement.textContent = "Query executed successfully.";
+            }
+
+            // Handle count result
+            if (data.count !== undefined) {
+                messageElement.textContent += ` Count: ${data.count}`;
+            }
+
+            // Handle document results
+            if (data.results && data.results.length > 0) {
+                const headers = Object.keys(data.results[0]);
+                tableHeader.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+                tableBody.innerHTML = data.results
+                    .map(r => `<tr>${headers.map(h => `<td>${r[h]}</td>`).join('')}</tr>`)
+                    .join('');
+                tableElement.style.display = "table";
+            } else if (data.count === undefined) {
+                // If it's not a count query and no results
+                messageElement.textContent += " No data found.";
+            }
+        }
+    } catch (error) {
+        // Display any unexpected errors
+        messageElement.textContent = `Error: ${error}`;
+    }
+});
+
+
+    </script>
+    
+</body>
+</html>
